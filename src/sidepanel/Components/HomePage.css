@@ -1,0 +1,33 @@
+.page-container{
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.title{
+    position: absolute;
+    top: 20%;
+    left: 50%;
+
+    width: 100%;
+    text-align: center;
+
+    font-size: 36px;
+    font-family: "Soda Shake";
+    translate: -50% -50%;
+}
+
+.home-page-button{
+    width: 60%;
+    height: 40px;
+
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

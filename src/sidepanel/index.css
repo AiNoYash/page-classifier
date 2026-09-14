@@ -1,3 +1,18 @@
+
+
+@font-face {
+    font-family: 'Soda Shake';
+    src: url('/fonts/soda-shake.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Super Bouncer';
+    src: url('/fonts/super-bouncer.ttf') format('truetype'); 
+    font-weight: normal;
+    font-style: normal;
+}
 *,
 *::before,
 *::after {
@@ -8,7 +23,9 @@
 * {
     margin: 0;
     padding: 0;
+    font-family: "Super Bouncer", sans-serif;
 }
+
 
 html,
 body,
@@ -26,10 +43,6 @@ svg {
     display: block;
     max-width: 100%;
     user-select: none;
-}
-
-img {
-    height: auto;
 }
 
 select,
@@ -53,8 +66,6 @@ button:active {
 input:focus {
     border: 2px solid rgba(0, 0, 0, 0.75);
 }
-
-
 
 
 
