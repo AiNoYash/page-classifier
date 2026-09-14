@@ -1,0 +1,101 @@
+
+.classifier-page-container{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    margin-bottom: 10px;
+}
+
+.header-title{
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.content-status{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.content-status.loading{ color: #666; }
+.content-status.ready{ color: #2e7d32; }
+.content-status.error{ color: #c62828; }
+
+.current-url{
+    font-size: 0.75rem;
+    color: #888;
+    padding: 0 10px 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.labels-list-container{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+
+    padding: 10px 0;
+    gap: 10px;
+    overflow-y: auto;
+}
+
+.list-item{
+    display: flex;
+    align-items: center;
+    border: 2px solid rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    padding: 12px;
+    gap: 10px;
+}
+
+.list-item .name{
+    margin-right: auto;
+    text-align: left;
+}
+
+.list-item .numbers{
+    font-size: 0.85rem;
+    color: #555;
+}
+
+.input-container{
+    width: 100%;
+    height: 60px;
+
+    display: flex;
+    gap: 10px;
+}
+
+.input-container input{
+    width: 80%;
+    height: 100%;
+    padding: 12px;
+}
+
+.input-container button{
+    height: 100%;
+    padding: 12px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.spin{
+    animation: spin 1s linear infinite;
+}
