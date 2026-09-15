@@ -23,7 +23,7 @@
 * {
     margin: 0;
     padding: 0;
-    font-family: "Super Bouncer", sans-serif;
+    /* font-family: "Super Bouncer", sans-serif; */
 }
 
 
@@ -52,9 +52,9 @@ button {
     border: none;
     outline: none;
     background-color: aliceblue;
-    cursor: pointer;
     border: 1px solid rgba(0, 0, 0, 0.5);
     border-radius: 4px;
+    padding: 0 16px 0 16px;
 }
 
 button:active {

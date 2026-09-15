@@ -1,0 +1,63 @@
+
+.models-page .back-button {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+}
+
+.models-page .title{
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    translate: -50% -50%;
+}
+
+.models-page .list {
+    margin-top: 150px;
+    width: 100%;
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+
+    padding-right: 10px;
+    gap: 10px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.models-page .item {
+    width: 100%;
+    height: 40px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.models-page .item .name {
+    flex: 1;
+}
+
+
+
+
+.models-page .input-panel {
+    margin-top: auto;
+    display: flex;
+    width: 100%;
+    height: 40px;
+    gap: 10px;
+}
+
+.models-page .input-panel input {
+    flex: 1;
+    height: 100%;
+}
+
+.models-page .input-panel button {
+    height: 100%;
+}

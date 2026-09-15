@@ -1,0 +1,83 @@
+.dataset-page .back-button {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+}
+
+.dataset-page .download-button {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
+
+.dataset-page .upload-button {
+    position: absolute;
+    top: 16px;
+    right: 50px;
+}
+
+.dataset-page .title{
+    position: absolute;
+    top:100px;
+    left: 50%;
+    translate: -50% -50%;
+}
+
+.dataset-page .list {
+    margin-top: 150px;
+    width: 100%;
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    padding-right: 10px;
+    gap: 10px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+
+.dataset-page .item {
+    width: 100%;
+    height: auto;
+
+    display: flex;
+    /* justify-content: center; */
+    align-items: center;
+    gap: 10px;
+}
+
+.dataset-page .item .name {
+    flex: 1;
+    min-width: 0;
+    word-break: break-all;
+    /* Forces long unbroken URLs to wrap to the next line */
+}
+
+.dataset-page .item .delete-button {
+    width: 40px;
+    flex-shrink: 0;
+    /* Prevents the button from shrinking when the URL is long */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    /* Optional: good UX for clickable icons */
+}
+
+
+
+.dataset-page .input-panel {
+    margin-top: auto;
+    display: flex;
+    width: 100%;
+    height: 40px;
+    gap: 10px;
+}
+
+.dataset-page .input-panel button {
+    flex: 1;
+    height: 100%;
+}

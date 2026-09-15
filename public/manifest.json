@@ -13,7 +13,8 @@
   "permissions": [
     "storage",
     "sidePanel",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "tabs"
   ],
    "content_scripts": [
    {
