@@ -1,4 +1,4 @@
-import { ArrowLeft, X, Tornado, Download, Upload } from "lucide-react";
+import { ArrowLeft, X, Tornado, Download, Upload, FileDown } from "lucide-react";
 import { Pages } from "../_enums/PagesEnum";
 import { useClassifierStore } from "../stores/useClassifierStore";
 import { useGeneralStore } from "../stores/useGeneralStore";
@@ -17,6 +17,7 @@ export function ModelPage() {
     const tab = useActiveTab();
     const count = Object.keys(model.dataset).length;
 
+    const [page, setPage] = useState("Test");
     // const fileInputRef = useRef(null);
     // const isNativePage = tab?.url?.startsWith("chrome://") || tab?.url?.startsWith("chrome-extension://");
 
@@ -81,16 +82,22 @@ export function ModelPage() {
                     <ArrowLeft />
                 </div>
                 <div className="download-button" onClick={() => {
-                    handleDownload();
+                    // handleDownload();
                 }}>
                     <Download />
                 </div>
-                <div className="upload-button" onClick={() => {
-                    fileInputRef.current?.click();
+                <div className="model-download-button" onClick={() => {
+                    // handleDownload();
                 }}>
-                    <input style={{ display: "none" }} type="file" ref={fileInputRef} onChange={(e) => {
-                        handleFileUpload(e);
-                    }} />
+                    <FileDown />
+                    
+                </div>
+                <div className="upload-button" onClick={() => {
+                    // fileInputRef.current?.click();
+                }}>
+                    {/* <input style={{ display: "none" }} type="file" ref={fileInputRef} onChange={(e) => { */}
+                        {/* handleFileUpload(e); */}
+                    {/* }} /> */}
                     <Upload />
                 </div>
                 <div className="list">

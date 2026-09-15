@@ -16,6 +16,12 @@
     right: 50px;
 }
 
+.model-page .model-download-button {
+    position: absolute;
+    top: 16px;
+    right: 84px;
+}
+
 .model-page .title{
     position: absolute;
     top:100px;
