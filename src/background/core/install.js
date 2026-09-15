@@ -11,6 +11,7 @@
 const defaultValues = {
     version: 1,
     classifiers: {},
+    isOn: true
 }
 
 

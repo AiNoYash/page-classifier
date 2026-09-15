@@ -32,7 +32,7 @@ export const useClassifierStore = create(
                     set((state) => {
                         state.models[newModel] = {};
                         state.models[newModel]["labels"] = [];
-                        state.models[newModel]["dataset"] = {}; 
+                        state.models[newModel]["dataset"] = {};
                     }),
 
                 removeModel: (model) =>
@@ -41,9 +41,9 @@ export const useClassifierStore = create(
                     }),
 
                 // ? When new labels come and stuff like that happen we are at that time still gonna use this same method to update it.
-                addModelItem: (model, item) =>
+                addModelItem: (model, url, item) =>
                     set((state) => {
-                        state.models[model]["dataset"] = item; // ? item is an obj here
+                        state.models[model]["dataset"][url] = item; // ? item is an obj here
                     }),
 
                 removeModelItem: (model, item) =>
@@ -51,6 +51,22 @@ export const useClassifierStore = create(
                         delete state.models[model]["dataset"][item] // ? item is name here
                     }),
 
+                addModelLabel: (model, label)=> 
+                    set(state =>{
+                        state.models[model]["labels"].push(label)
+                    }),
+                removeModelLabel: (model, label) =>
+                    set((state) => {
+                        const labels = state.models[model]["labels"];
+                        const dataset = state.models[model]["dataset"]
+                        const index = labels.indexOf(label);
+                        state.models[model]["labels"].splice(index, 1)
+
+                        Object.keys(dataset).forEach(url => {
+                            const index = state.models[model]["dataset"][url].labels.indexOf(label);
+                            state.models[model]["dataset"][url].labels.splice(index, 1)
+                        });
+                    }),
 
                 datasets: {},
                 selectedDataset: "",

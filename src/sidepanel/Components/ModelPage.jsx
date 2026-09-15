@@ -1,73 +1,153 @@
-import { ArrowLeft, X, Tornado, Download, Upload, FileDown } from "lucide-react";
+import { ArrowLeft, X, Download, Upload, FileDown, BugPlay, SportShoe } from "lucide-react";
 import { Pages } from "../_enums/PagesEnum";
 import { useClassifierStore } from "../stores/useClassifierStore";
 import { useGeneralStore } from "../stores/useGeneralStore";
 import "./ModelPage.css"
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useActiveTab } from "../hooks/useActiveTab";
+import { MessageAction } from "../../_enum/MessageActionEnum";
 
+
+import { LogisticRegressionClassifier } from "natural";
+
+
+const ModelInnerPage = Object.freeze({
+    TEST: "test",
+    TRAIN: "train"
+});
+
+async function getCurrentPageContent(tabId, updateContent) {
+    if (!tabId) {
+        return;
+    }
+
+    try {
+        const response = await chrome.tabs.sendMessage(tab.id, {
+            action: MessageAction.SEND_PAGE_CONTENT,
+        });
+
+        console.log(response);
+        updateContent(response);
+
+    } catch (error) {
+        console.error("Could not send message. Is the content script injected?", error);
+    }
+}
 
 
 export function ModelPage() {
     const selectedModel = useClassifierStore(state => state.selectedModel);
     const model = useClassifierStore(state => state.models[selectedModel]);
 
+    const removeModelItem = useClassifierStore(state => state.removeModelItem);
+    const addModelItem = useClassifierStore(state => state.addModelItem);
+    const addModelLabel = useClassifierStore(state => state.addModelLabel);
+    const removeModelLabel = useClassifierStore(state => state.removeModelLabel);
+
+    const [name, setName] = useState("");
+
     if (!model) return;
 
+    const labels = model.labels;
+    const dataset = model.dataset;
+
+    let labelCountMap = {}
+
+    labels.forEach(label => {
+        labelCountMap[label] = 0
+    });
+
+    dataset.forEach(item => {
+        item.labels.foreach(label => {
+            labelCountMap[label] += 1
+        });
+    });
+
+
+
     const tab = useActiveTab();
+    const currentPageUrl = tab?.url;
+
+    const isNativePage = tab?.url?.startsWith("chrome://") || tab?.url?.startsWith("chrome-extension://");
+
     const count = Object.keys(model.dataset).length;
+    const [currentPageLabels, setCurrentPageLabels] = useState([]);
+    const [currentPageContent, setCurrentPageContent] = useState({ content: "", url: "" });
+    const [page, setPage] = useState(ModelInnerPage.TRAIN);
 
-    const [page, setPage] = useState("Test");
-    // const fileInputRef = useRef(null);
-    // const isNativePage = tab?.url?.startsWith("chrome://") || tab?.url?.startsWith("chrome-extension://");
-
-    // const handleDownload = () => {
-    //     const exportData = { dataset: dataset };
-    //     const jsonString = JSON.stringify(exportData, null, 2);
-    //     const blob = new Blob([jsonString], { type: "application/json" });
-    //     const url = URL.createObjectURL(blob);
-
-    //     const a = document.createElement("a");
-    //     a.href = url;
-    //     a.download = `${selectedDataset}-dataset.json`;
-    //     document.body.appendChild(a);
-    //     a.click();
-
-    //     document.body.removeChild(a);
-    //     URL.revokeObjectURL(url);
-    // };
+    const [classifier, setClassifier] = useState(null);
+    const [classifications, setClassifications] = useState({});
+    const [classified, setClassified] = useState("");
 
 
-    // const handleFileUpload = (event) => {
-    //     const file = event.target.files[0];
-    //     if (!file) return;
+    useEffect(() => {
+        if (isNativePage) {
+            return;
+        }
 
-    //     const reader = new FileReader();
-    //     reader.onload = (e) => {
-    //         try {
-    //             const parsedData = JSON.parse(e.target.result);
+    }, [currentPageUrl]);
 
-    //             if (parsedData && Array.isArray(parsedData.dataset)) {
 
-    //                 const mergedUrls = Array.from(new Set([...dataset, ...parsedData.dataset]));
+    useEffect(() => {
+        if (currentPageLabels.length === 0) {
+            removeModelItem(selectedModel, currentPageUrl);
+        }
+        else {
+            if (currentPageContent.url != currentPageUrl) {
+                getCurrentPageContent(tab.id, setCurrentPageContent);
+                return
+            }
 
-    //                 useClassifierStore.setState((state) => ({
-    //                     datasets: {
-    //                         ...state.datasets,
-    //                         [selectedDataset]: mergedUrls
-    //                     }
-    //                 }));
-    //             } else {
-    //                 alert("Invalid file format. Expected JSON with a 'dataset' array.");
-    //             }
-    //         } catch (error) {
-    //             console.error("Failed to parse JSON", error);
-    //         }
-    //     };
+            addModelItem(selectedModel, currentPageUrl, {
+                content: currentPageContent.content,
+                labels: currentPageLabels
+            });
+        }
 
-    //     reader.readAsText(file);
-    //     event.target.value = null;
-    // };
+    }, [currentPageLabels, currentPageContent]);
+
+
+    useEffect(() => {
+        if (page === ModelInnerPage.TRAIN) {
+            return;
+        }
+
+        const classifier = new LogisticRegressionClassifier();
+
+        Object.values(dataset).forEach((item) => {
+            item.labels.forEach(label => {
+                classifier.addDocument(item.content, label);
+            });
+        });
+
+        classifier.train()
+        setClassifier(classifier);
+
+    }, [dataset, page]); // ? Dataset prolly can't change but whatever
+
+    useEffect(() => {
+        if (page === ModelInnerPage.TRAIN) {
+            return;
+        }
+
+        if (currentPageContent.url !== currentPageUrl) {
+            getCurrentPageContent(tab.id, setCurrentPageContent);
+            return;
+        }
+
+        setClassified(classifier.classify(currentPageContent.content));
+        const classificationsArray = classifier.getClassifications(currentPageContent.content);
+
+        const classifications = {};
+
+        classificationsArray.foreach(classification => {
+            classifications[classification.label] = classification.value;
+        });
+
+
+    }, [currentPageUrl, currentPageContent, page, classifier]);
+
+
 
     return (
         <>
@@ -90,48 +170,97 @@ export function ModelPage() {
                     // handleDownload();
                 }}>
                     <FileDown />
-                    
                 </div>
                 <div className="upload-button" onClick={() => {
                     // fileInputRef.current?.click();
                 }}>
                     {/* <input style={{ display: "none" }} type="file" ref={fileInputRef} onChange={(e) => { */}
-                        {/* handleFileUpload(e); */}
+                    {/* handleFileUpload(e); */}
                     {/* }} /> */}
                     <Upload />
                 </div>
-                <div className="list">
-                    {dataset.map((url, index) => {
-                        return (
-                            <div className="item" key={index}>
-                                <div className="name">{url}</div>
-                                <div className="delete-button" onDoubleClick={() => {
-                                    useClassifierStore.getState().removeDatasetItem(selectedDataset, index);
+
+                <div className="page-button" onClick={() => {
+                    if (page === ModelInnerPage.TRAIN) {
+                        setPage(ModelInnerPage.TEST);
+                    }
+                    else {
+                        setPage(ModelInnerPage.TRAIN);
+                    }
+                }}>
+                    {
+                        page === ModelInnerPage.TRAIN ? <BugPlay /> : <SportShoe />
+                    }
+                </div>
+
+                {
+                    page === ModelInnerPage.TRAIN ? <>
+                        <div className="list">
+                            {model.labels.map((label, index) => {
+                                return (
+                                    <div className="item" key={index}>
+                                        <button disabled={isNativePage} className={`name ${currentPageLabels.includes(label) ? "active" : ""}`} onClick={(e) => {
+                                            const index = currentPageLabels.indexOf(label);
+
+                                            if (index !== -1) {
+                                                setCurrentPageLabels([...currentPageLabels].splice(index, 1));
+                                            }
+                                            else {
+                                                setCurrentPageLabels([...currentPageLabels, label]);
+                                            }
+                                        }}>
+                                            {label}
+                                        </button>
+                                        <div className="label-count">
+                                            {labelCountMap[label]}
+                                        </div>
+                                        <div className="delete-button" onDoubleClick={() => {
+                                            removeModelLabel(selectedModel, label);
+                                        }}>
+                                            <X />
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                        <div className="input-panel">
+                            <input
+                                type="text"
+                                value={name}
+                                placeholder="Add label..."
+                                onChange={(e) => {
+                                    setName(e.target.value);
+                                }} />
+                            <button
+                                onClick={(e) => {
+                                    const label = name.trim()
+                                    if (!label) {
+                                        return;
+                                    }
+
+                                    addModelLabel(selectedModel, label);
                                 }}>
-                                    <X />
-                                </div>
-                            </div>
-                        )
-                    })}
-                </div>
-                <div className="input-panel">
-                    <button
-                        disabled={isNativePage}
-                        onClick={(e) => {
-                            const url = tab.url;
-                            console.log(url);
+                                Add
+                            </button>
+                        </div>
+                    </> : <>
+                        <div className="list">
+                            {model.labels.map((label, index) => {
+                                return (
+                                    <div className="item" key={index}>
+                                        <button disabled={isNativePage} className={`name`} >
+                                            {label}
+                                        </button>
+                                        <div className="label-count">
+                                            {classifications[label]}
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </>
+                }
 
-                            const toRemove = dataset.includes(url);
-
-                            if (toRemove) {
-                                useClassifierStore.getState().removeDatasetItem(selectedDataset, dataset.indexOf(url));
-                            } else {
-                                useClassifierStore.getState().addDatasetItem(selectedDataset, url);
-                            }
-                        }}>
-                        {dataset.includes(tab?.url) ? "Remove" : "Add"}
-                    </button>
-                </div>
             </div>
         </>
     )
