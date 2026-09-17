@@ -51,8 +51,8 @@ export const useClassifierStore = create(
                         delete state.models[model]["dataset"][item] // ? item is name here
                     }),
 
-                addModelLabel: (model, label)=> 
-                    set(state =>{
+                addModelLabel: (model, label) =>
+                    set(state => {
                         state.models[model]["labels"].push(label)
                     }),
                 removeModelLabel: (model, label) =>
@@ -65,6 +65,10 @@ export const useClassifierStore = create(
                         Object.keys(dataset).forEach(url => {
                             const index = state.models[model]["dataset"][url].labels.indexOf(label);
                             state.models[model]["dataset"][url].labels.splice(index, 1)
+
+                            if (state.models[model]["dataset"][url].labels.length === 0) {
+                                delete state.models[model]["dataset"][url];
+                            }
                         });
                     }),
 

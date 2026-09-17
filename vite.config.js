@@ -5,6 +5,7 @@ import react from "@vitejs/plugin-react"
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
   build: {
+
     emptyOutDir: true,
 
     rollupOptions: {
@@ -21,6 +22,6 @@ export default defineConfig(({ mode }) => ({
       },
     },
 
-    sourcemap: mode !== 'production'
+    sourcemap: true // ? This is feature is so goated why am i finding this now  
   },
 }));

@@ -8,8 +8,7 @@ import { useActiveTab } from "../hooks/useActiveTab";
 import { MessageAction } from "../../_enum/MessageActionEnum";
 
 
-import { LogisticRegressionClassifier } from "natural";
-
+import { LogisticRegressionClassifier } from "../../_model/classifier";
 
 const ModelInnerPage = Object.freeze({
     TEST: "test",
@@ -22,7 +21,7 @@ async function getCurrentPageContent(tabId, updateContent) {
     }
 
     try {
-        const response = await chrome.tabs.sendMessage(tab.id, {
+        const response = await chrome.tabs.sendMessage(tabId, {
             action: MessageAction.SEND_PAGE_CONTENT,
         });
 
@@ -46,7 +45,7 @@ export function ModelPage() {
 
     const [name, setName] = useState("");
 
-    if (!model) return;
+    if (!model) return null;
 
     const labels = model.labels;
     const dataset = model.dataset;
@@ -57,15 +56,15 @@ export function ModelPage() {
         labelCountMap[label] = 0
     });
 
-    dataset.forEach(item => {
-        item.labels.foreach(label => {
+    Object.values(dataset).forEach(item => {
+        item.labels.forEach(label => {
             labelCountMap[label] += 1
         });
     });
 
 
-
     const tab = useActiveTab();
+
     const currentPageUrl = tab?.url;
 
     const isNativePage = tab?.url?.startsWith("chrome://") || tab?.url?.startsWith("chrome-extension://");
@@ -89,6 +88,8 @@ export function ModelPage() {
 
 
     useEffect(() => {
+        if (!tab?.id || isNativePage) return;
+
         if (currentPageLabels.length === 0) {
             removeModelItem(selectedModel, currentPageUrl);
         }
@@ -112,6 +113,7 @@ export function ModelPage() {
             return;
         }
 
+
         const classifier = new LogisticRegressionClassifier();
 
         Object.values(dataset).forEach((item) => {
@@ -130,24 +132,46 @@ export function ModelPage() {
             return;
         }
 
+        if (!tab?.id || isNativePage) return;
+
         if (currentPageContent.url !== currentPageUrl) {
             getCurrentPageContent(tab.id, setCurrentPageContent);
             return;
         }
 
         setClassified(classifier.classify(currentPageContent.content));
-        const classificationsArray = classifier.getClassifications(currentPageContent.content);
+        const classifications = classifier.getClassifications(currentPageContent.content);
 
-        const classifications = {};
-
-        classificationsArray.foreach(classification => {
-            classifications[classification.label] = classification.value;
-        });
-
+        console.log(classifications);
 
     }, [currentPageUrl, currentPageContent, page, classifier]);
 
 
+    useEffect(() => {
+        if (isNativePage || !currentPageUrl) {
+            setCurrentPageLabels([]);
+            return;
+        }
+
+        const existingData = model.dataset[currentPageUrl];
+
+        if (existingData && existingData.labels) {
+            setCurrentPageLabels(existingData.labels);
+        } else {
+            setCurrentPageLabels([]);
+        }
+
+    }, [currentPageUrl, isNativePage]);
+
+    useEffect(() => {
+        if (currentPageLabels.length === 0) {
+            removeModelItem(selectedModel, currentPageUrl)
+        } else {
+            addModelItem(selectedModel, {
+                    // ! Working at this point
+            })
+        }
+    }, [currentPageLabels]);
 
     return (
         <>
@@ -200,10 +224,9 @@ export function ModelPage() {
                                 return (
                                     <div className="item" key={index}>
                                         <button disabled={isNativePage} className={`name ${currentPageLabels.includes(label) ? "active" : ""}`} onClick={(e) => {
-                                            const index = currentPageLabels.indexOf(label);
-
-                                            if (index !== -1) {
-                                                setCurrentPageLabels([...currentPageLabels].splice(index, 1));
+                                            const ind = currentPageLabels.indexOf(label);
+                                            if (ind !== -1) {
+                                                setCurrentPageLabels([...currentPageLabels].splice(ind, 1));
                                             }
                                             else {
                                                 setCurrentPageLabels([...currentPageLabels, label]);
@@ -215,6 +238,7 @@ export function ModelPage() {
                                             {labelCountMap[label]}
                                         </div>
                                         <div className="delete-button" onDoubleClick={() => {
+                                            setCurrentPageLabels(prevLabels => prevLabels.filter(l => l !== label));
                                             removeModelLabel(selectedModel, label);
                                         }}>
                                             <X />

@@ -62,11 +62,17 @@
 }
 
 .model-page .item .name {
+    height: 30px;
     flex: 1;
     min-width: 0;
     word-break: break-all;
     /* Forces long unbroken URLs to wrap to the next line */
 }
+
+.model-page .item .name.active {
+    background-color: oklab(84.32300000000001% -0.06082 0.04268);
+}
+
 
 .model-page .item .delete-button {
     width: 40px;
