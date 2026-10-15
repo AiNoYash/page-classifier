@@ -30,13 +30,13 @@ export function ModelsPage({ }) {
                         return (
                             <div className="item" key={index}>
                                 <div className="name">{modelName}</div>
-                                <div className="edit-button" onDoubleClick={() => {
+                                <div className="edit-button" title="Double click to open" onDoubleClick={() => {
                                     useClassifierStore.setState({ selectedModel: modelName });
                                     useGeneralStore.setState({ page: Pages.MODEL });
                                 }}>
                                     <Pencil />
                                 </div>
-                                <div className="delete-button" onDoubleClick={() => {
+                                <div className="delete-button" title="Double click to delete" onDoubleClick={() => {
                                     useClassifierStore.getState().removeModel(modelName);
                                 }}>
                                     <Trash />

@@ -18,8 +18,8 @@ function transformClassesForOneVsAll(Y, oneClass) {
 export default class LogisticRegression {
   constructor(options = {}) {
     const {
-      numSteps = 50000,
-      learningRate = 5e-4,
+      numSteps = 5000,
+      learningRate = 5e-3,
       classifiers = [],
       numberClasses = 0,
     } = options;

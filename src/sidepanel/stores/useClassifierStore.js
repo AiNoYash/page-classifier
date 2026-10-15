@@ -4,7 +4,7 @@ import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 
 
-// model: {
+// models: {
 //     modelName: {
 //         labels: []
 //         dataset: {
@@ -91,8 +91,6 @@ export const useClassifierStore = create(
                     set((state) => {
                         state.datasets[dataset].splice(itemIndex, 1);
                     }),
-
-
             })
         ),
         {

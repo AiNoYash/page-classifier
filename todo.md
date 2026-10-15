@@ -1,0 +1,1 @@
+# Add better/improve way of extracting text content from the page

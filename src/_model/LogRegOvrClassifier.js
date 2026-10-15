@@ -1,10 +1,10 @@
 import Matrix from "ml-matrix";
 import { buildVocabulary } from "./helper/tfidf";
 import { vectorize, vectorizeAll } from "./helper/vector";
-import LogisticRegression from "ml-logistic-regression";
+import LogisticRegression from "./helper/log-reg-ovr/logreg";
 
 
-export class LogisticRegressionClassifier {
+export class LogRegOvrClassifier {
     model;
 
     maxFeatures;
@@ -20,9 +20,9 @@ export class LogisticRegressionClassifier {
 
     documents;
     labels;
+    
 
-
-    constructor({ maxFeatures = 5000, minDf = 2, maxDf = 0.9, numSteps = 100000, learningRate = 5e-4 } = {}) {
+    constructor({ maxFeatures = 5000, minDf = 2, maxDf = 0.9, numSteps = 1000, learningRate = 5e-2 } = {}) {
         this.maxFeatures = maxFeatures;
         this.minDf = minDf;
         this.maxDf = maxDf;

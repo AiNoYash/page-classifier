@@ -98,7 +98,7 @@ export function DatasetPage() {
                         return (
                             <div className="item" key={index}>
                                 <div className="name">{url}</div>
-                                <div className="delete-button" onDoubleClick={() => {
+                                <div className="delete-button" title="Double click to delete" onDoubleClick={() => {
                                     useClassifierStore.getState().removeDatasetItem(selectedDataset, index);
                                 }}>
                                     <X />
