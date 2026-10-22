@@ -4,28 +4,40 @@
     left: 16px;
 }
 
-.model-page .download-button {
+.model-page .download-dataset-without-labels-button {
     position: absolute;
     top: 16px;
     right: 16px;
+}
+
+.model-page .upload-dataset-without-labels-button {
+    position: absolute;
+    top: 16px;
+    right: 50px;
+}
+
+.model-page .download-dataset-button {
+    position: absolute;
+    top: 16px;
+    right: 84px;
+}
+
+.model-page .upload-dataset-button {
+    position: absolute;
+    top: 16px;
+    right: 118px;
+}
+
+.model-page .model-download-button {
+    position: absolute;
+    top: 16px;
+    right: 152px;
 }
 
 .model-page .page-button {
     position: absolute;
     top: 50px;
     right: 16px;
-}
-
-.model-page .upload-button {
-    position: absolute;
-    top: 16px;
-    right: 50px;
-}
-
-.model-page .model-download-button {
-    position: absolute;
-    top: 16px;
-    right: 84px;
 }
 
 .model-page .title {
@@ -90,6 +102,33 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+
+
+.model-page .input-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: auto;
+    gap: 10px;
+}
+
+.model-page .iteration-index{
+    width: 100%;
+    padding: 0 16px;
+}
+
+.model-page .tab-input-panel {
+    display: flex;
+    width: 100%;
+    height: 40px;
+    gap: 10px;
+}
+
+.model-page .tab-input-panel button {
+    flex: 1;
+    height: 100%;
 }
 
 

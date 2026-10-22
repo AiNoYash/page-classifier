@@ -81,7 +81,7 @@ input:focus {
     background: aliceblue;
     transition: background 0.3s;
 
-    border-radius: 2x;
+    border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {

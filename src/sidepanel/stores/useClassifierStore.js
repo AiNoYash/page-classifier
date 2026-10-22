@@ -55,19 +55,30 @@ export const useClassifierStore = create(
                     set(state => {
                         state.models[model]["labels"].push(label)
                     }),
+
                 removeModelLabel: (model, label) =>
                     set((state) => {
                         const labels = state.models[model]["labels"];
-                        const dataset = state.models[model]["dataset"]
-                        const index = labels.indexOf(label);
-                        state.models[model]["labels"].splice(index, 1)
+                        const dataset = state.models[model]["dataset"];
 
+                        // Remove from global labels array
+                        const globalIndex = labels.indexOf(label);
+                        if (globalIndex !== -1) {
+                            state.models[model]["labels"].splice(globalIndex, 1);
+                        }
+
+                        // Remove from individual dataset items
                         Object.keys(dataset).forEach(url => {
-                            const index = state.models[model]["dataset"][url].labels.indexOf(label);
-                            state.models[model]["dataset"][url].labels.splice(index, 1)
+                            const itemLabels = state.models[model]["dataset"][url].labels;
+                            const index = itemLabels.indexOf(label);
 
-                            if (state.models[model]["dataset"][url].labels.length === 0) {
-                                delete state.models[model]["dataset"][url];
+                            // Only splice if the label actually exists in this document
+                            if (index !== -1) {
+                                itemLabels.splice(index, 1);
+
+                                if (itemLabels.length === 0) {
+                                    delete state.models[model]["dataset"][url];
+                                }
                             }
                         });
                     }),

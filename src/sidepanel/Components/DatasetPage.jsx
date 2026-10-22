@@ -12,12 +12,12 @@ export function DatasetPage() {
     const selectedDataset = useClassifierStore(state => state.selectedDataset);
     const dataset = useClassifierStore(state => state.datasets[selectedDataset]);
 
-    if (!dataset) return;
-
     const count = dataset.length;
     const tab = useActiveTab();
-
+    
     const fileInputRef = useRef(null);
+    
+    if (!dataset) return;
     const isNativePage = tab?.url?.startsWith("chrome://") || tab?.url?.startsWith("chrome-extension://");
 
     const handleDownload = () => {
@@ -28,7 +28,7 @@ export function DatasetPage() {
 
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${selectedDataset}-dataset.json`;
+        a.download = `${selectedDataset}-dataset-without-labels.json`;
         document.body.appendChild(a);
         a.click();
 

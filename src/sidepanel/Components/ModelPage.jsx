@@ -1,4 +1,4 @@
-import { ArrowLeft, X, Download, Upload, FileDown, BugPlay, SportShoe } from "lucide-react";
+import { ArrowLeft, X, Download, Upload, FileDown, BugPlay, SportShoe, ArrowDownToLine, ArrowUpToLine } from "lucide-react";
 import { Pages } from "../_enums/PagesEnum";
 import { useClassifierStore } from "../stores/useClassifierStore";
 import { useGeneralStore } from "../stores/useGeneralStore";
@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { useActiveTab } from "../hooks/useActiveTab";
 import { MessageAction } from "../../_enum/MessageActionEnum";
 
+// ! All the alerts need to be replaces with something else sidepanels don't have alert panels but that is something to be thought of later
 
 import { LogRegOvrClassifier } from "../../_model/LogRegOvrClassifier";
 
@@ -16,8 +17,7 @@ const ModelInnerPage = Object.freeze({
 });
 
 
-
-async function getCurrentPageContent(tabId, updateContent) {
+export async function getCurrentPageContent(tabId, updateContent) {
     if (!tabId) {
         return;
     }
@@ -42,7 +42,6 @@ export function ModelPage() {
     const selectedModel = useClassifierStore(state => state.selectedModel);
 
     const model = useClassifierStore(state => state.models[selectedModel]);
-    if (!model) return null;
 
     const removeModelItem = useClassifierStore(state => state.removeModelItem);
     const addModelItem = useClassifierStore(state => state.addModelItem);
@@ -55,11 +54,15 @@ export function ModelPage() {
     const dataset = model.dataset;
 
     const fileInputRef = useRef(null);
+    const fileInputRefDatasetWithoutLabels = useRef(null);
 
     let labelCountMap = {}
     const tab = useActiveTab();
 
-
+    const [tabIterationsOn, setTabIterationsOn] = useState(false)
+    const [tabIterationIndex, setTabIterationIndex] = useState(0)
+    const [datasetList, setDatasetList] = useState([]);
+    const [iterationTabId, setIterationTabId] = useState(null);
 
     labels.forEach(label => {
         labelCountMap[label] = 0
@@ -71,7 +74,6 @@ export function ModelPage() {
             labelCountMap[label] += 1
         });
     });
-
 
 
     const currentPageUrl = tab?.url;
@@ -86,6 +88,7 @@ export function ModelPage() {
     const [classifications, setClassifications] = useState({});
     const [classified, setClassified] = useState("");
 
+    if (!model) return null;
 
     useEffect(() => {
         if (isNativePage) {
@@ -93,7 +96,6 @@ export function ModelPage() {
         }
 
     }, [currentPageUrl]);
-
 
     useEffect(() => {
         if (!tab?.id || isNativePage || tab.status !== "complete") return;
@@ -175,6 +177,41 @@ export function ModelPage() {
     }, [currentPageUrl, isNativePage]);
 
 
+
+    useEffect(() => {
+
+        async function openAndSaveTab() {
+            const tab = await chrome.tabs.create({
+                url: datasetList[tabIterationIndex],
+                active: true
+            });
+            setIterationTabId(tab.id);
+        }
+
+        async function safeUpdateTab() {
+            try {
+                await chrome.tabs.get(iterationTabId);
+                await chrome.tabs.update(iterationTabId, { url: datasetList[tabIterationIndex] });
+            } catch (error) {
+                console.warn(`Tab ${iterationTabId} no longer exists. Creating a new one instead.`);
+                openAndSaveTab();
+            }
+        }
+
+
+        if (!tabIterationsOn)
+            return;
+
+
+        if (iterationTabId === null) {
+            openAndSaveTab();
+        }
+        else {
+            safeUpdateTab();
+        }
+
+    }, [tabIterationIndex, tabIterationsOn, datasetList, iterationTabId]);
+
     const handleDatasetDownload = () => {
         const exportData = {
             dataset: dataset,
@@ -186,7 +223,26 @@ export function ModelPage() {
 
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${selectedModel}-dataset.json`;
+        a.download = `${selectedModel}-dataset-with-labels.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    const handleDatasetWithoutLabelsDownload = () => {
+        const exportData = {
+            dataset: Object.keys(dataset),
+        };
+
+
+        const jsonString = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${selectedModel}-dataset-without-labels.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -195,7 +251,7 @@ export function ModelPage() {
 
     const handleModelDownload = () => {
         if (!classifier) {
-            alert("Model not trained yet! Please switch to Test mode to train the model before downloading.");
+            console.error("Model not trained yet! Please switch to Test mode to train the model before downloading."); // This won't work to begin with
             return;
         }
 
@@ -272,6 +328,36 @@ export function ModelPage() {
     };
 
 
+    function handleFileUploadDatasetWithoutLabels(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const parsedData = JSON.parse(e.target.result);
+
+                if (parsedData && parsedData.dataset && typeof parsedData.dataset === 'object') {
+                    const incomingDataset = parsedData.dataset;
+
+                    setDatasetList(incomingDataset);
+                    setTabIterationsOn(true);
+
+                } else {
+                    alert("Invalid file format. Expected JSON with a 'dataset' object.");
+                }
+            } catch (error) {
+                console.error("Failed to parse JSON", error);
+                alert("Failed to parse the uploaded file.");
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = null;
+    }
+
+
+
+
 
     return (
         <>
@@ -286,15 +372,11 @@ export function ModelPage() {
                     <ArrowLeft />
                 </div>
 
-                <div className="download-button" title="Download dataset with labels" onClick={handleDatasetDownload}>
-                    <Download />
-                </div>
-
                 <div className="model-download-button" title="Download model" onClick={handleModelDownload}>
                     <FileDown />
                 </div>
 
-                <div className="upload-button" title="Upload dataset with labels" onClick={() => {
+                <div className="upload-dataset-button" title="Upload dataset with labels" onClick={() => {
                     fileInputRef.current?.click();
                 }}>
                     <input
@@ -307,7 +389,29 @@ export function ModelPage() {
                     <Upload />
                 </div>
 
-                <div className="page-button" title={page === ModelInnerPage.TRAIN ? "In Training Mode" : "In Testing Mode"} onClick={() => {
+                <div className="download-dataset-button" title="Download dataset with labels" onClick={handleDatasetDownload}>
+                    <Download />
+                </div>
+
+                <div className="upload-dataset-without-labels-button" title="Upload dataset without labels" onClick={() => {
+                    fileInputRefDatasetWithoutLabels.current?.click();
+                }}>
+                    <input
+                        style={{ display: "none" }}
+                        type="file"
+                        accept=".json,application/json"
+                        ref={fileInputRefDatasetWithoutLabels}
+                        onChange={handleFileUploadDatasetWithoutLabels}
+                    />
+                    <ArrowUpToLine />
+                </div>
+
+                <div className="download-dataset-without-labels-button" title="Download dataset without labels" onClick={handleDatasetWithoutLabelsDownload}>
+                    <ArrowDownToLine />
+                </div>
+
+
+                <div className="page-button" title={page === ModelInnerPage.TRAIN ? "Enter Testing Mode" : "Enter Training Mode"} onClick={() => {
                     if (page === ModelInnerPage.TRAIN) {
                         setPage(ModelInnerPage.TEST);
                     }
@@ -350,26 +454,67 @@ export function ModelPage() {
                                 )
                             })}
                         </div>
-                        <div className="input-panel">
-                            <input
-                                type="text"
-                                value={name}
-                                placeholder="Add label..."
-                                onChange={(e) => {
-                                    setName(e.target.value);
-                                }} />
-                            <button
-                                onClick={(e) => {
-                                    const label = name.trim()
-                                    if (!label) {
-                                        return;
-                                    }
 
-                                    setName("");
-                                    addModelLabel(selectedModel, label);
-                                }}>
-                                Add
-                            </button>
+                        <div className="input-group">
+                            {
+                                tabIterationsOn ? <>
+                                    <div className="iteration-index">{tabIterationIndex + 1}</div>
+                                    <div className="tab-input-panel">
+                                        <button
+                                            onClick={(e) => {
+                                                setTabIterationsOn(false);
+                                            }}>
+                                            Exit
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                let newIndex = tabIterationIndex - 1;
+
+                                                if (newIndex < 0)
+                                                    newIndex = datasetList.length - 1;
+
+                                                setTabIterationIndex(newIndex);
+                                            }}>
+                                            Back
+                                        </button><button
+                                            onClick={(e) => {
+                                                let newIndex = tabIterationIndex + 1;
+
+                                                if (newIndex >= datasetList.length)
+                                                    newIndex = 0;
+
+                                                setTabIterationIndex(newIndex);
+                                            }}>
+                                            Next
+                                        </button>
+                                    </div>
+                                </>
+                                    :
+                                    <>
+                                    </>
+                            }
+
+                            <div className="input-panel">
+                                <input
+                                    type="text"
+                                    value={name}
+                                    placeholder="Add label..."
+                                    onChange={(e) => {
+                                        setName(e.target.value);
+                                    }} />
+                                <button
+                                    onClick={(e) => {
+                                        const label = name.trim()
+                                        if (!label) {
+                                            return;
+                                        }
+
+                                        setName("");
+                                        addModelLabel(selectedModel, label);
+                                    }}>
+                                    Add
+                                </button>
+                            </div>
                         </div>
                     </> : <>
                         <div className="list">

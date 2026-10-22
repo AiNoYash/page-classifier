@@ -1,5 +1,5 @@
 import { stem } from "porter2";
-import { noisewords, stopwords } from "./stopwords";
+import { noisewords, stopwords } from "./stopwords.js";
 
 
 export function tokenize(text) {

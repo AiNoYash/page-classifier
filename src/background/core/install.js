@@ -1,16 +1,6 @@
 
-// ? classifiers will be of type:
-// {
-// name: { 
-//      labels: {
-//          label: { url: doc, ... }         
-//          }
-//      }
-// }
-
 const defaultValues = {
     version: 1,
-    classifiers: {},
     isOn: true
 }
 

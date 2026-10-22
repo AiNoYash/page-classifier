@@ -1,6 +1,6 @@
 import Matrix from "ml-matrix";
 import { buildVocabulary } from "./helper/tfidf";
-import { vectorize, vectorizeAll } from "./helper/vector";
+import { vectorize, vectorizeAll } from "./helper/vectorize";
 import LogisticRegression from "./helper/log-reg-ovr/logreg";
 
 
@@ -42,6 +42,9 @@ export class LogRegOvrClassifier {
     }
 
     train() {
+        if(this.documents.length === 0) 
+            return;
+
         const { vocabulary, idf } = buildVocabulary(this.documents, {
             minDf: this.minDf,
             maxDf: this.maxDf,
@@ -69,6 +72,8 @@ export class LogRegOvrClassifier {
 
     // ? return label
     classify(document) {
+        if (!this.model) return;
+
         const vector = vectorize(document, this.vocabulary, this.idf);
         const XMatrix = new Matrix([vector]);
         const [predictedIndex] = this.model.predict(XMatrix);
@@ -77,6 +82,8 @@ export class LogRegOvrClassifier {
     }
 
     getClassifications(document) {
+        if (!this.model) return;
+
         const vector = vectorize(document, this.vocabulary, this.idf);
         const XMatrix = new Matrix([vector]);
         const scoresMatrix = this.model.testScores(XMatrix);  // ? The underlying ml model yields p then 1-p is the prob for target
@@ -92,11 +99,11 @@ export class LogRegOvrClassifier {
 
 
     static load(config) {
-        if (config.name !== "LogisticRegressionClassifier") {
+        if (config.name !== "LogRegOvrClassifier") {
             throw new Error(`invalid model: ${config.name}`);
         }
 
-        const newClassifier = new LogisticRegressionClassifier(config);
+        const newClassifier = new LogRegOvrClassifier(config);
         newClassifier.uniqueLabels = config.uniqueLabels;
         newClassifier.vocabulary = config.vocabulary;
         newClassifier.idf = config.idf;
@@ -108,7 +115,7 @@ export class LogRegOvrClassifier {
 
     toJSON() {
         return {
-            name: 'LogisticRegressionClassifier',
+            name: 'LogRegOvrClassifier',
             numSteps: this.numSteps,
             learningRate: this.learningRate,
             maxFeatures: this.maxFeatures,

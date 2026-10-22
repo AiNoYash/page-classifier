@@ -1,5 +1,16 @@
 import { Matrix } from 'ml-matrix';
 
+
+function addBias(features) {
+  const data = features.to2DArray();
+  for (let i = 0; i < data.length; i++) {
+    data[i].push(1);
+  }
+  return new Matrix(data);
+}
+
+
+
 export default class LogisticRegressionTwoClasses {
   constructor(options = {}) {
     const { numSteps = 50000, learningRate = 5e-4, weights = null } = options;
@@ -9,10 +20,11 @@ export default class LogisticRegressionTwoClasses {
   }
 
   train(features, target) {
-    let weights = Matrix.zeros(1, features.columns);
+    const featuresWithBias = addBias(features);
+    let weights = Matrix.zeros(1, featuresWithBias.columns);
 
     for (let step = 0; step < this.numSteps; step++) {
-      const scores = features.mmul(weights.transpose());
+      const scores = featuresWithBias.mmul(weights.transpose());
       const predictions = sigmoid(scores);
 
       // Update weights with gradient
@@ -20,7 +32,7 @@ export default class LogisticRegressionTwoClasses {
         .neg()
         .add(target);
 
-      const gradient = features.transpose().mmul(outputErrorSignal);
+      const gradient = featuresWithBias.transpose().mmul(outputErrorSignal);
       weights = weights.add(gradient.mul(this.learningRate).transpose());
     }
 
@@ -29,12 +41,14 @@ export default class LogisticRegressionTwoClasses {
 
   // ? in this implementation a testScore of near to 0 mean target is being predicted
   testScores(features) {
-    const finalData = features.mmul(this.weights.transpose());
+    const featuresWithBias = addBias(features);
+    const finalData = featuresWithBias.mmul(this.weights.transpose());
     return sigmoid(finalData);
   }
 
   predict(features) {
-    const finalData = features.mmul(this.weights.transpose());
+    const featuresWithBias = addBias(features);
+    const finalData = featuresWithBias.mmul(this.weights.transpose());
     return sigmoid(finalData).map(Math.round);
   }
 

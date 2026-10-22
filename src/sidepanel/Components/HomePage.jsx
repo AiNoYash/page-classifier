@@ -23,6 +23,13 @@ export function HomePage() {
                     }}>
                     Datasets
                 </button>
+                <button
+                    className="home-page-button"
+                    onClick={() => {
+                        useGeneralStore.setState({ page: Pages.TEST })
+                    }}>
+                    Test
+                </button>
             </div>
         </>
     )

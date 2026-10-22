@@ -4,4 +4,5 @@ export const Pages = Object.freeze({
     DATASETS: "datasets",
     MODEL: "model",
     MODELS: "models",
+    TEST: "test"
 });
